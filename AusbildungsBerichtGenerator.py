@@ -73,11 +73,11 @@ class training_report:
     __tst: list[tuple1]
 
     __doc: Document()
-    __ab_begin: datetime
+    __training_begin: datetime
 
     def __init__(self):
         self.__doc = Document("BerichtVorlage.docx")
-        self.__ab_begin = datetime.datetime(2022, 8, 1)
+        self.__training_begin = datetime.datetime(2022, 8, 1)
         self.__yot = 0
         self.__wotb = datetime.datetime.now()
         self.__wote = datetime.datetime.now()
@@ -85,7 +85,7 @@ class training_report:
         self.__i = []
         self.__tst = []
 
-    def to_json(self):
+    def to_json(self) -> str:
         json_dict = {
             "yot": self.__yot,
             "wotb": self.__wotb.isoformat(),
@@ -106,41 +106,40 @@ class training_report:
 
         report.__oa = []
         for item in json_data["oa"]:
-            obj = tuple1(item["_tuple1__text"], item["_tuple1__hours"])  # Anpassung hier
+            obj = tuple1(item["_tuple1__text"], item["_tuple1__hours"])
             report.__oa.append(obj)
 
         report.__i = []
         for item in json_data["i"]:
-            obj = tuple1(item["_tuple1__text"], item["_tuple1__hours"])  # Anpassung hier
+            obj = tuple1(item["_tuple1__text"], item["_tuple1__hours"])
             report.__i.append(obj)
 
         report.__tst = []
         for item in json_data["tst"]:
-            obj = tuple1(item["_tuple1__text"], item["_tuple1__hours"])  # Anpassung hier
+            obj = tuple1(item["_tuple1__text"], item["_tuple1__hours"])
             report.__tst.append(obj)
 
         return report
 
     def __calc_abj(self, wotb: datetime) -> int:
-        diff = wotb.year - self.__ab_begin.year
-        if wotb.isocalendar()[1] > self.__ab_begin.isocalendar()[1]:
+        diff = wotb.year - self.__training_begin.year
+        if wotb.isocalendar()[1] > self.__training_begin.isocalendar()[1]:
             diff -= 1
         return diff
 
     def set_head_table(self, cw: str):
-        # kw sould be format like jjjj-Www Example: "2023-W26"
+        # kw must be format like jjjj-Www Example: "2023-W26"
         self.__wotb = datetime.datetime.strptime(cw + '-1', "%Y-W%W-%w")
         self.__wote = datetime.datetime.strptime(cw + '-5', "%Y-W%W-%w")
         self.__yot = self.__calc_abj(self.__wotb)
 
     def __replace_markers(self, text: str) -> str:
-        # TODO: cast int and datetime to expected format
         if text.startswith("$YOT"):
-            return self.__yot
+            return str(self.__yot)
         elif text.startswith("$WOTB"):
-            return self.__wotb
+            return self.__wotb.strftime("%d.%m.%Y")
         elif text.startswith("$WOTE"):
-            return self.__wote
+            return self.__wote.strftime("%d.%m.%Y")
         elif text.startswith("$OA"):
             return tuple1.generate_str_from_list_text(self.__oa)
         elif text.startswith("$OAH"):
@@ -173,9 +172,8 @@ class training_report:
         for table in self.__doc.tables:
             for row in table.rows:
                 for cell in row.cells:
-                    text = cell.text
-                    if text.startswith("$"):
-                        self.__replace_markers(text)
+                    if cell.text.startswith("$"):
+                        cell.text = self.__replace_markers(cell.text)
         self.__doc.save(filename)
 
     def print_paragraphs(self):
@@ -203,11 +201,11 @@ def main():
     abb.save_document_to("test.docx")
     abb.print_tables()
     json_str = abb.to_json()
-    with open("config.json", "w") as file:
+    with open("training_report.json", "w") as file:
         file.write(json_str)
 
     # Beispiel für das Lesen aus einer JSON-Datei
-    with open("config.json", "r") as file:
+    with open("training_report.json", "r") as file:
         json_str = file.read()
     abb = training_report.from_json(json_str)
     abb.save_document_to("test.docx")
