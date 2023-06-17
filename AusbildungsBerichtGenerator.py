@@ -133,6 +133,27 @@ class training_report:
         self.__wote = datetime.datetime.strptime(cw + '-5', "%Y-W%W-%w")
         self.__yot = self.__calc_abj(self.__wotb)
 
+    def add_oa(self, text: str, hours: int):
+        if len(self.__oa) <= 8:
+            self.__oa.append(tuple1(text, hours))
+
+    def remove_oa(self, index: int):
+        self.__oa.pop(index)
+
+    def add_i(self, text: str, hours: int):
+        if len(self.__oa) <= 8:
+            self.__i.append(tuple1(text, hours))
+
+    def remove_i(self, index: int):
+        self.__i.pop(index)
+
+    def add_tst(self, text: str, hours: int):
+        if len(self.__oa) <= 8:
+            self.__tst.append(tuple1(text, hours))
+
+    def remove_tst(self, index: int):
+        self.__tst.pop(index)
+
     def __replace_markers(self, text: str) -> str:
         if text.startswith("$YOT"):
             return str(self.__yot)
@@ -176,12 +197,43 @@ class training_report:
                         cell.text = self.__replace_markers(cell.text)
         self.__doc.save(filename)
 
-    def print_paragraphs(self):
+    """
+    const string TOP_LEFT_JOINT = "┌";
+    const string TOP_RIGHT_JOINT = "┐";
+    const string BOTTOM_LEFT_JOINT = "└";
+    const string BOTTOM_RIGHT_JOINT = "┘";
+    const string TOP_JOINT = "┬";
+    const string BOTTOM_JOINT = "┴";
+    const string LEFT_JOINT = "├";
+    const string JOINT = "┼";
+    const string RIGHT_JOINT = "┤";
+    const char HORIZONTAL_LINE = '─';
+    const char PADDING = ' ';
+    const string VERTICAL_LINE = "│";
+    """
+    def print_tables(self):
+        print("┌" + "─" + "Operational activities" + "─" * 27 + "┬──┐")
+        for tup in self.__oa:
+            print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
+                  (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
+        print("└" + "─" * 50 + "┴──┘")
+        print("┌" + "─" + "Instructions" + "─" * 37 + "┬──┐")
+        for tup in self.__i:
+            print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
+                  (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
+        print("└" + "─" * 50 + "┴──┘")
+        print("┌" + "─" + "Topics of school teaching" + "─" * 24 + "┬──┐")
+        for tup in self.__tst:
+            print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
+                  (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
+        print("└" + "─" * 50 + "┴──┘")
+
+    def print_doc_paragraphs(self):
         for p in self.__doc.paragraphs:
             print("-" * 32 + "\nNew Paragraph\n" + "-" * 32)
             print(p.text)
 
-    def print_tables(self):
+    def print_doc_tables(self):
         for table in self.__doc.tables:
             print("-" * 32 + "\nNew Table\n" + "-" * 32)
             for row in table.rows:
@@ -197,9 +249,13 @@ class training_report:
 def main():
     # Beispiel für das Schreiben in eine JSON-Datei
     abb = training_report()
-    abb.set_head_table("2023-W13")
-    abb.save_document_to("test.docx")
     abb.print_tables()
+    abb.set_head_table("2023-W13")
+
+    abb.add_oa("RMM", 12)
+    abb.add_oa("Außendienst", 8)
+
+    abb.save_document_to("test.docx")
     json_str = abb.to_json()
     with open("training_report.json", "w") as file:
         file.write(json_str)
