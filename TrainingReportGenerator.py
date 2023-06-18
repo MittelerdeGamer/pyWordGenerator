@@ -10,6 +10,14 @@ except ModuleNotFoundError:
     print("successfully installed python-docx\nimporting python-docx now")
     from docx import Document
 
+try:
+    from termcolor import colored
+except ModuleNotFoundError:
+    print("termcolor not installed\ninstalling termcolor...")
+    subprocess.check_call(["pip", "install", "termcolor"])
+    print("successfully installed termcolor\nimporting termcolor now")
+    from termcolor import colored
+
 
 class TrainingReportEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -45,6 +53,8 @@ class tuple1:
 
     def get_hours(self) -> int:
         return self.__hours
+    def set_hours(self, hours: int):
+        self.__hours = hours
 
     @staticmethod
     def generate_str_from_list_text(array: list) -> str:
@@ -133,15 +143,12 @@ class training_report:
             diff -= 1
         return diff
 
-    def set_head_table(self, cw: str):
-        # kw must be format like jjjj-Www Example: "2023-W26"
-        self.__wotb = datetime.datetime.strptime(cw + '-1', "%Y-W%W-%w")
-        self.__wote = datetime.datetime.strptime(cw + '-5', "%Y-W%W-%w")
-        self.__yot = self.__calc_abj(self.__wotb)
-
     def add_oa(self, text: str, hours: int):
         if len(self.__oa) <= 8:
             self.__oa.append(tuple1(text, hours))
+
+    def edit_oa(self, index: int, hours: int):
+        self.__oa[index].set_hours(hours)
 
     def remove_oa(self, index: int):
         self.__oa.pop(index)
@@ -150,12 +157,18 @@ class training_report:
         if len(self.__oa) <= 8:
             self.__i.append(tuple1(text, hours))
 
+    def edit_i(self, index: int, hours: int):
+        self.__i[index].set_hours(hours)
+
     def remove_i(self, index: int):
         self.__i.pop(index)
 
     def add_tst(self, text: str, hours: int):
         if len(self.__oa) <= 8:
             self.__tst.append(tuple1(text, hours))
+
+    def edit_tst(self, index: int, hours: int):
+        self.__tst[index].set_hours(hours)
 
     def remove_tst(self, index: int):
         self.__tst.pop(index)
@@ -180,6 +193,22 @@ class training_report:
         elif text.startswith("$TSTH"):
             return tuple1.generate_str_from_list_hours(self.__tst)
 
+    def set_head_table(self, cw: str):
+        # kw must be format like jjjj-Www Example: "2023-W26"
+        self.__wotb = datetime.datetime.strptime(cw + '-1', "%Y-W%W-%w")
+        self.__wote = datetime.datetime.strptime(cw + '-5', "%Y-W%W-%w")
+        self.__yot = self.__calc_abj(self.__wotb)
+
+    def set_standard_oa(self):
+        self.add_oa("RMM", int(input("Time for RMM: ")))
+        self.add_oa("Helpdesk", int(input("Time for Helpdesk: ")))
+        self.add_oa("Außendienst", int(input("Time for Außendienst: ")))
+
+    def set_standard_tst(self):
+        self.add_tst("RMM", int(input("Time for RMM: ")))
+        self.add_tst("Helpdesk", int(input("Time for Helpdesk: ")))
+        self.add_tst("Außendienst", int(input("Time for Außendienst: ")))
+
     def check_work_hours(self) -> (bool, int):
         work_hours = 0
 
@@ -196,12 +225,16 @@ class training_report:
             return False, work_hours
 
     def save_document_to(self, filename: str):
-        for table in self.__doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    if cell.text.startswith("$"):
-                        cell.text = self.__replace_markers(cell.text)
-        self.__doc.save(filename)
+        if self.check_work_hours()[1]:
+            for table in self.__doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        if cell.text.startswith("$"):
+                            cell.text = self.__replace_markers(cell.text)
+            self.__doc.save(filename)
+            self.__doc = Document("BerichtVorlage.docx")
+        else:
+            self.print_check_work_hours()
 
     """
     const string TOP_LEFT_JOINT = "┌";
@@ -218,7 +251,7 @@ class training_report:
     const string VERTICAL_LINE = "│";
     """
 
-    def print_haed(self):
+    def print_head(self):
         print("┌" + "─Week of training Beginning──" +
               "┬" + "─Week of training Ending──" +
               "┬" + "─Year of training──" + "┐")
@@ -226,6 +259,7 @@ class training_report:
               "│" + " " * 8 + self.__wote.strftime("%d.%m.%Y") + " " * 8 +
               "│" + " " * 9 + str(self.__yot) + " " * 9 + "│")
         print("└" + "─" * 29 + "┴" + "─" * 26 + "┴" + "─" * 19 + "┘")
+        print()
 
     def print_tables(self):
         print("┌" + "─" + "Operational activities" + "─" * 27 + "┬──┐")
@@ -243,53 +277,105 @@ class training_report:
             print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
                   (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
         print("└" + "─" * 50 + "┴──┘")
+        print()
+
+    def print_check_work_hours(self):
+        is_ok, work_hours = self.check_work_hours()
+        status = 'ok' if is_ok else 'not ok'
+        status_color = 'green' if is_ok else 'red'
+        status_text = colored(status, status_color)
+        print(f"\tWork hours are {status_text}:\t{work_hours}\n")
 
     def print_all(self):
-        self.print_haed()
+        self.print_head()
         self.print_tables()
-
-    def print_doc_paragraphs(self):
-        for p in self.__doc.paragraphs:
-            print("-" * 32 + "\nNew Paragraph\n" + "-" * 32)
-            print(p.text)
-
-    def print_doc_tables(self):
-        for table in self.__doc.tables:
-            print("-" * 32 + "\nNew Table\n" + "-" * 32)
-            for row in table.rows:
-                print("|".join([cell.text for cell in row.cells]))
-
-    def get_paragraphs(self):
-        return self.__doc.paragraphs
-
-    def get_tables(self):
-        return self.__doc.tables
+        self.print_check_work_hours()
 
 
-def exit_app(training_rep: training_report):
+def load_tr(path: str = "training_report.json") -> training_report:
+    with open(path, "r") as file:
+        json_str = file.read()
+    return training_report.from_json(json_str)
+
+
+def save_tr(training_rep: training_report, path: str = "training_report.json"):
     json_str = training_rep.to_json()
-    with open("training_report.json", "w") as file:
+    with open(path, "w") as file:
         file.write(json_str)
     exit()
 
 
+select_main = """0 : I/O Operations
+1 : Operational activities
+2 : Instructions
+3 : Topics of school teaching
+4 : Table Head
+5 : Print Operations
+9 : Exit
+"""
+# TODO: add automation with randomizer and filler(Betriebliche Tätigkeiten)
+
+select_io = """0 : load last training report
+1 : save json
+2 : save document
+3 : load json
+"""
+
+select_oa = """0 : set standard Operational activities
+1 : add entry to Operational activities
+2 : remove entry from Operational activities
+"""
+
+select_i = """0 : add entry to Instructions
+1 : remove entry from Instructions
+"""
+
+select_tst = """0 : set Topics of school teaching
+"""
+
+select_th = """
+"""
+
+select_print = """
+"""
+
+
 def main():
-    # Beispiel für das Schreiben in eine JSON-Datei
     abb = training_report()
-    abb.print_all()
-    abb.set_head_table("2023-W13")
+    running = True
 
-    abb.add_oa("RMM", 12)
-    abb.add_oa("Außendienst", 8)
+    while running:
+        abb.print_all()
+        print(select_main)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : I/O Operations
+            pass
+        elif select_action == "1":
+            # 1 : Operational activities
+            pass
+        elif select_action == "2":
+            # 2 : Instructions
+            pass
+        elif select_action == "3":
+            # 3 : Topics of school teaching
+            pass
+        elif select_action == "4":
+            # 4 : Table Head
+            pass
+        elif select_action == "5":
+            # 5 : Print Operations
+            pass
+        elif select_action == "9":
+            # 9 : Exit
+            running = False
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
 
-    exit_app(abb)
-
-    # Beispiel für das Lesen aus einer JSON-Datei
-    with open("training_report.json", "r") as file:
-        json_str = file.read()
-    abb = training_report.from_json(json_str)
-    abb.print_all()
+    save_tr(abb)
 
 
 if __name__ == '__main__':
+    print("\nWelcome to TrainingReportGenerator by Jannis Swientek\n")
     main()
