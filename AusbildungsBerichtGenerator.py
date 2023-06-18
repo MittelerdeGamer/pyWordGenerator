@@ -1,6 +1,14 @@
-from docx import Document
 import datetime
 import json
+import subprocess
+
+try:
+    from docx import Document
+except ModuleNotFoundError:
+    print("docx not installed\ninstalling python-docx...")
+    subprocess.check_call(["pip", "install", "python-docx"])
+    print("successfully installed python-docx\nimporting python-docx now")
+    from docx import Document
 
 
 class TrainingReportEncoder(json.JSONEncoder):
@@ -78,9 +86,7 @@ class training_report:
     def __init__(self):
         self.__doc = Document("BerichtVorlage.docx")
         self.__training_begin = datetime.datetime(2022, 8, 1)
-        self.__yot = 0
-        self.__wotb = datetime.datetime.now()
-        self.__wote = datetime.datetime.now()
+        self.set_head_table(f"{datetime.datetime.now().strftime('%Y')}-W{datetime.datetime.now().strftime('%W')}")
         self.__oa = []
         self.__i = []
         self.__tst = []
@@ -211,6 +217,16 @@ class training_report:
     const char PADDING = ' ';
     const string VERTICAL_LINE = "│";
     """
+
+    def print_haed(self):
+        print("┌" + "─Week of training Beginning──" +
+              "┬" + "─Week of training Ending──" +
+              "┬" + "─Year of training──" + "┐")
+        print("│" + " " * 10 + self.__wotb.strftime("%d.%m.%Y") + " " * 9 +
+              "│" + " " * 8 + self.__wote.strftime("%d.%m.%Y") + " " * 8 +
+              "│" + " " * 9 + str(self.__yot) + " " * 9 + "│")
+        print("└" + "─" * 29 + "┴" + "─" * 26 + "┴" + "─" * 19 + "┘")
+
     def print_tables(self):
         print("┌" + "─" + "Operational activities" + "─" * 27 + "┬──┐")
         for tup in self.__oa:
@@ -227,6 +243,10 @@ class training_report:
             print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
                   (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
         print("└" + "─" * 50 + "┴──┘")
+
+    def print_all(self):
+        self.print_haed()
+        self.print_tables()
 
     def print_doc_paragraphs(self):
         for p in self.__doc.paragraphs:
@@ -246,26 +266,29 @@ class training_report:
         return self.__doc.tables
 
 
+def exit_app(training_rep: training_report):
+    json_str = training_rep.to_json()
+    with open("training_report.json", "w") as file:
+        file.write(json_str)
+    exit()
+
+
 def main():
     # Beispiel für das Schreiben in eine JSON-Datei
     abb = training_report()
-    abb.print_tables()
+    abb.print_all()
     abb.set_head_table("2023-W13")
 
     abb.add_oa("RMM", 12)
     abb.add_oa("Außendienst", 8)
 
-    abb.save_document_to("test.docx")
-    json_str = abb.to_json()
-    with open("training_report.json", "w") as file:
-        file.write(json_str)
+    exit_app(abb)
 
     # Beispiel für das Lesen aus einer JSON-Datei
     with open("training_report.json", "r") as file:
         json_str = file.read()
     abb = training_report.from_json(json_str)
-    abb.save_document_to("test.docx")
-    abb.print_tables()
+    abb.print_all()
 
 
 if __name__ == '__main__':
