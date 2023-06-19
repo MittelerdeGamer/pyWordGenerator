@@ -46,13 +46,21 @@ class tuple1:
 
     def __init__(self, text: str, hours: int):
         self.__text = text[:self.__max_length]
-        self.__hours = hours
+        if 1 <= hours <= 40:
+            self.__hours = hours
+        else:
+            if hours < 1:
+                self.__hours = 1
+            elif 40 < hours:
+                self.__hours = 40
+            print(colored("ValueWarning: Hours must be between 1 and 40.\n", "yellow"))
 
     def get_text(self) -> str:
         return self.__text
 
     def get_hours(self) -> int:
         return self.__hours
+
     def set_hours(self, hours: int):
         self.__hours = hours
 
@@ -354,6 +362,8 @@ def main():
             pass
         elif select_action == "1":
             # 1 : Operational activities
+            abb.add_oa("This Test tests for the max length of text in tuple1", 0)
+            abb.add_oa("Test", 41)
             pass
         elif select_action == "2":
             # 2 : Instructions
