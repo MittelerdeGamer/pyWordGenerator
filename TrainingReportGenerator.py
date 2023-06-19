@@ -62,7 +62,14 @@ class tuple1:
         return self.__hours
 
     def set_hours(self, hours: int):
-        self.__hours = hours
+        if 1 <= hours <= 40:
+            self.__hours = hours
+        else:
+            if hours < 1:
+                self.__hours = 1
+            elif 40 < hours:
+                self.__hours = 40
+            print(colored("ValueWarning: Hours must be between 1 and 40.\n", "yellow"))
 
     @staticmethod
     def generate_str_from_list_text(array: list) -> str:
@@ -233,7 +240,7 @@ class training_report:
             return False, work_hours
 
     def save_document_to(self, filename: str):
-        if self.check_work_hours()[1]:
+        if self.check_work_hours()[0]:
             for table in self.__doc.tables:
                 for row in table.rows:
                     for cell in row.cells:
@@ -313,77 +320,171 @@ def save_tr(training_rep: training_report, path: str = "training_report.json"):
     exit()
 
 
-select_main = """0 : I/O Operations
-1 : Operational activities
-2 : Instructions
-3 : Topics of school teaching
-4 : Table Head
-5 : Print Operations
-9 : Exit
-"""
-# TODO: add automation with randomizer and filler(Betriebliche Tätigkeiten)
-
-select_io = """0 : load last training report
-1 : save json
-2 : save document
-3 : load json
-"""
-
-select_oa = """0 : set standard Operational activities
-1 : add entry to Operational activities
-2 : remove entry from Operational activities
-"""
-
-select_i = """0 : add entry to Instructions
-1 : remove entry from Instructions
-"""
-
-select_tst = """0 : set Topics of school teaching
-"""
-
-select_th = """
-"""
-
-select_print = """
+select_oa = """1 : set standard Operational activities
+2 : add entry to Operational activities
+3 : edit entry from Operational activities
+4 : remove entry from Operational activities
+0 : back
 """
 
 
-def main():
-    abb = training_report()
+def operation_oa(tr: training_report):
     running = True
-
     while running:
-        abb.print_all()
-        print(select_main)
+        print(select_oa)
         select_action = input("Select action: ")
         print()
         if select_action == "0":
-            # 0 : I/O Operations
-            pass
+            # 0 : back
+            running = False
         elif select_action == "1":
-            # 1 : Operational activities
-            abb.add_oa("This Test tests for the max length of text in tuple1", 0)
-            abb.add_oa("Test", 41)
-            pass
-        elif select_action == "2":
-            # 2 : Instructions
-            pass
-        elif select_action == "3":
-            # 3 : Topics of school teaching
-            pass
-        elif select_action == "4":
-            # 4 : Table Head
-            pass
-        elif select_action == "5":
-            # 5 : Print Operations
-            pass
-        elif select_action == "9":
-            # 9 : Exit
+            # 1 : set standard Operational activities
+            tr.set_standard_tst()
+            print()
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
+
+
+select_i = """1 : add entry to Instructions
+2 : remove entry from Instructions
+0 : Exit
+"""
+
+
+def operation_i(tr: training_report):
+    running = True
+    while running:
+        print(select_i)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : Exit
             running = False
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
-    save_tr(abb)
+
+select_tst = """1 : set standard Topics of school teaching
+0 : Exit
+"""
+
+
+def operation_tst(tr: training_report):
+    running = True
+    while running:
+        print(select_tst)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : Exit
+            running = False
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
+
+
+select_th = """1 : set Topics of school teaching
+0 : Exit
+"""
+
+
+def operation_th(tr: training_report):
+    running = True
+    while running:
+        print(select_th)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : Exit
+            running = False
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
+
+
+select_io = """1 : save json
+2 : save document
+3 : load json
+4 : load last training report
+0 : Exit
+"""
+
+
+def operation_io(tr: training_report):
+    running = True
+    while running:
+        print(select_io)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : Exit
+            running = False
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
+
+
+select_print = """0 : Exit
+"""
+
+
+def operation_print(tr: training_report):
+    running = True
+    while running:
+        print(select_print)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : Exit
+            running = False
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
+
+
+select_main = """1 : Operational activities
+2 : Instructions
+3 : Topics of school teaching
+4 : Table Head
+5 : I/O Operations
+6 : Print Operations
+0 : Exit
+"""
+
+
+# TODO: add automation with randomizer and filler(Betriebliche Tätigkeiten)
+
+
+def main():
+    tr = training_report()
+    running = True
+
+    while running:
+        tr.print_all()
+        print(select_main)
+        select_action = input("Select action: ")
+        print()
+        if select_action == "0":
+            # 0 : Exit
+            running = False
+        elif select_action == "1":
+            # 1 : Operational activities
+            operation_oa(tr)
+        elif select_action == "2":
+            # 2 : Instructions
+            operation_i(tr)
+        elif select_action == "3":
+            # 3 : Topics of school teaching
+            operation_tst(tr)
+        elif select_action == "4":
+            # 4 : Table Head
+            operation_th(tr)
+        elif select_action == "5":
+            # 5 : I/O Operations
+            operation_io(tr)
+        elif select_action == "6":
+            # 6 : Print Operations
+            operation_print(tr)
+        else:
+            print(colored("Please Enter a valid action\n", "yellow"))
+
+    save_tr(tr)
 
 
 if __name__ == '__main__':
