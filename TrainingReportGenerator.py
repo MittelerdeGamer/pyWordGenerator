@@ -341,6 +341,12 @@ def operation_oa(tr: training_report):
             # 1 : set standard Operational activities
             tr.set_standard_tst()
             print()
+        elif select_action == "2":
+            pass
+        elif select_action == "3":
+            pass
+        elif select_action == "4":
+            pass
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
@@ -360,6 +366,14 @@ def operation_i(tr: training_report):
         if select_action == "0":
             # 0 : Exit
             running = False
+        elif select_action == "1":
+            pass
+        elif select_action == "2":
+            pass
+        elif select_action == "3":
+            pass
+        elif select_action == "4":
+            pass
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
@@ -378,6 +392,14 @@ def operation_tst(tr: training_report):
         if select_action == "0":
             # 0 : Exit
             running = False
+        elif select_action == "1":
+            pass
+        elif select_action == "2":
+            pass
+        elif select_action == "3":
+            pass
+        elif select_action == "4":
+            pass
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
@@ -396,6 +418,14 @@ def operation_th(tr: training_report):
         if select_action == "0":
             # 0 : Exit
             running = False
+        elif select_action == "1":
+            pass
+        elif select_action == "2":
+            pass
+        elif select_action == "3":
+            pass
+        elif select_action == "4":
+            pass
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
@@ -417,6 +447,18 @@ def operation_io(tr: training_report):
         if select_action == "0":
             # 0 : Exit
             running = False
+        elif select_action == "1":
+            # 1 : save json
+            save_tr(tr, input("Filename or Path: "))
+        elif select_action == "2":
+            # 2 : save document
+            pass
+        elif select_action == "3":
+            # 3 : load json
+            load_tr(input("Filename or Path: "))
+        elif select_action == "4":
+            # 4 : load last training report
+            pass
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
@@ -434,6 +476,14 @@ def operation_print(tr: training_report):
         if select_action == "0":
             # 0 : Exit
             running = False
+        elif select_action == "1":
+            pass
+        elif select_action == "2":
+            pass
+        elif select_action == "3":
+            pass
+        elif select_action == "4":
+            pass
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
