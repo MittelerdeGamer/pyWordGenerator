@@ -7,7 +7,7 @@ import os
 try:
     from docx import Document
 except ModuleNotFoundError:
-    print("python-docx not installed\ninstalling python-docx...")
+    print("docx not installed\ninstalling python-docx...")
     subprocess.check_call(["pip", "install", "python-docx"])
     print("successfully installed python-docx\nimporting python-docx now")
     from docx import Document
