@@ -1,11 +1,13 @@
 import datetime
 import json
+import random
 import subprocess
+import os
 
 try:
     from docx import Document
 except ModuleNotFoundError:
-    print("docx not installed\ninstalling python-docx...")
+    print("python-docx not installed\ninstalling python-docx...")
     subprocess.check_call(["pip", "install", "python-docx"])
     print("successfully installed python-docx\nimporting python-docx now")
     from docx import Document
@@ -17,6 +19,9 @@ except ModuleNotFoundError:
     subprocess.check_call(["pip", "install", "termcolor"])
     print("successfully installed termcolor\nimporting termcolor now")
     from termcolor import colored
+
+document_break_line = """
+"""
 
 
 class TrainingReportEncoder(json.JSONEncoder):
@@ -40,7 +45,7 @@ class TrainingReportDecoder(json.JSONDecoder):
 
 
 class tuple1:
-    __max_length = 50
+    __max_length = 65
     __text: str
     __hours: int
 
@@ -75,14 +80,14 @@ class tuple1:
     def generate_str_from_list_text(array: list) -> str:
         gen_text = ""
         for obj in array:
-            gen_text = gen_text + obj.get_text() + "/n"
+            gen_text = gen_text + obj.get_text() + document_break_line
         return gen_text
 
     @staticmethod
     def generate_str_from_list_hours(array: list) -> str:
         gen_text = ""
         for obj in array:
-            gen_text = gen_text + obj.get_hours() + "/n"
+            gen_text = gen_text + str(obj.get_hours()) + document_break_line
         return gen_text
 
 
@@ -189,23 +194,23 @@ class training_report:
         self.__tst.pop(index)
 
     def __replace_markers(self, text: str) -> str:
-        if text.startswith("$YOT"):
+        if text == "$YOT":
             return str(self.__yot)
-        elif text.startswith("$WOTB"):
+        elif text == "$WOTB":
             return self.__wotb.strftime("%d.%m.%Y")
-        elif text.startswith("$WOTE"):
+        elif text == "$WOTE":
             return self.__wote.strftime("%d.%m.%Y")
-        elif text.startswith("$OA"):
+        elif text == "$OA":
             return tuple1.generate_str_from_list_text(self.__oa)
-        elif text.startswith("$OAH"):
+        elif text == "$OAH":
             return tuple1.generate_str_from_list_hours(self.__oa)
-        elif text.startswith("$I"):
+        elif text == "$I":
             return tuple1.generate_str_from_list_text(self.__i)
-        elif text.startswith("$IH"):
+        elif text == "$IH":
             return tuple1.generate_str_from_list_hours(self.__i)
-        elif text.startswith("$TST"):
+        elif text == "$TST":
             return tuple1.generate_str_from_list_text(self.__tst)
-        elif text.startswith("$TSTH"):
+        elif text == "$TSTH":
             return tuple1.generate_str_from_list_hours(self.__tst)
 
     def set_head_table(self, cw: str):
@@ -218,6 +223,7 @@ class training_report:
         self.add_oa("RMM", int(input("Time for RMM: ")))
         self.add_oa("Helpdesk", int(input("Time for Helpdesk: ")))
         self.add_oa("Außendienst", int(input("Time for Außendienst: ")))
+        self.add_oa("Softwareentwicklung", int(input("Time for Softwareentwicklung: ")))
 
     def set_standard_tst(self):
         self.add_tst("RMM", int(input("Time for RMM: ")))
@@ -251,6 +257,14 @@ class training_report:
         else:
             self.print_check_work_hours()
 
+    def print_document(self):
+        # Save the document as a temporary file
+        temp_file = 'temp.docx'
+        self.save_document_to(temp_file)
+
+        # Print the document
+        os.startfile(temp_file, "print")
+
     """
     const string TOP_LEFT_JOINT = "┌";
     const string TOP_RIGHT_JOINT = "┐";
@@ -277,21 +291,21 @@ class training_report:
         print()
 
     def print_tables(self):
-        print("┌" + "─" + "Operational activities" + "─" * 27 + "┬──┐")
+        print("┌" + "─" + "Operational activities" + "─" * 42 + "┬──┐")
         for tup in self.__oa:
-            print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
+            print("│" + tup.get_text() + (" " * (65 - len(tup.get_text()))) + "│" +
                   (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
-        print("└" + "─" * 50 + "┴──┘")
-        print("┌" + "─" + "Instructions" + "─" * 37 + "┬──┐")
+        print("└" + "─" * 65 + "┴──┘")
+        print("┌" + "─" + "Instructions" + "─" * 52 + "┬──┐")
         for tup in self.__i:
-            print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
+            print("│" + tup.get_text() + (" " * (65 - len(tup.get_text()))) + "│" +
                   (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
-        print("└" + "─" * 50 + "┴──┘")
-        print("┌" + "─" + "Topics of school teaching" + "─" * 24 + "┬──┐")
+        print("└" + "─" * 65 + "┴──┘")
+        print("┌" + "─" + "Topics of school teaching" + "─" * 39 + "┬──┐")
         for tup in self.__tst:
-            print("│" + tup.get_text() + (" " * (50 - len(tup.get_text()))) + "│" +
+            print("│" + tup.get_text() + (" " * (65 - len(tup.get_text()))) + "│" +
                   (" " * (2 - len(str(tup.get_hours())))) + str(tup.get_hours()) + "│")
-        print("└" + "─" * 50 + "┴──┘")
+        print("└" + "─" * 65 + "┴──┘")
         print()
 
     def print_check_work_hours(self):
@@ -305,6 +319,24 @@ class training_report:
         self.print_head()
         self.print_tables()
         self.print_check_work_hours()
+
+
+def increment_cw(cw: str) -> str:
+    split = cw.split("-W")
+    split[1] = str(int(split[1]) + 1)
+    return split[0]+"-W"+split[1]
+
+
+def auto_generate(cw: str) -> training_report:
+    tr = training_report()
+    tr.set_head_table(cw)
+    tr.add_oa("RMM", random.randint(4, 12))
+    tr.add_oa("Helpdesk", random.randint(4, 8))
+    tr.add_oa("Außendienst", random.randint(2, 8))
+    tr.add_oa("Softwareentwicklung", random.randint(8, 24))
+    if tr.check_work_hours()[1] < 40:
+        tr.add_oa("Betriebliche Tätigkeiten", random.randint(1, 5))
+    return tr
 
 
 def load_tr(path: str = "training_report.json") -> training_report:
@@ -324,7 +356,7 @@ select_oa = """1 : set standard Operational activities
 2 : add entry to Operational activities
 3 : edit entry from Operational activities
 4 : remove entry from Operational activities
-0 : back
+0 : Back
 """
 
 
@@ -335,25 +367,32 @@ def operation_oa(tr: training_report):
         select_action = input("Select action: ")
         print()
         if select_action == "0":
-            # 0 : back
+            # 0 : Back
             running = False
         elif select_action == "1":
             # 1 : set standard Operational activities
-            tr.set_standard_tst()
+            tr.set_standard_oa()
             print()
         elif select_action == "2":
-            pass
+            # 2 : add entry to Operational activities
+            tr.add_oa(input("Text: "), int(input("Hours: ")))
+            print()
         elif select_action == "3":
-            pass
+            # 3 : edit entry from Operational activities
+            tr.edit_oa(int(input("Line: ")) - 1, int(input("Hours: ")))
+            print()
         elif select_action == "4":
-            pass
+            # 4 : remove entry from Operational activities
+            tr.remove_oa(int(input("Line: ")) - 1)
+            print()
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
 
 select_i = """1 : add entry to Instructions
-2 : remove entry from Instructions
-0 : Exit
+2 : edit entry from Instructions
+3 : remove entry from Instructions
+0 : Back
 """
 
 
@@ -364,22 +403,26 @@ def operation_i(tr: training_report):
         select_action = input("Select action: ")
         print()
         if select_action == "0":
-            # 0 : Exit
+            # 0 : Back
             running = False
         elif select_action == "1":
-            pass
+            # 1 : add entry to Instructions
+            tr.add_i(input("Text: "), int(input("Hours: ")))
+            print()
         elif select_action == "2":
-            pass
+            # 2 : edit entry from Instructions
+            tr.edit_i(int(input("Line: ")) - 1, int(input("Hours: ")))
+            print()
         elif select_action == "3":
-            pass
-        elif select_action == "4":
-            pass
+            # 3 : remove entry from Instructions
+            tr.remove_i(int(input("Line: ")) - 1)
+            print()
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
 
 select_tst = """1 : set standard Topics of school teaching
-0 : Exit
+0 : Back
 """
 
 
@@ -390,100 +433,79 @@ def operation_tst(tr: training_report):
         select_action = input("Select action: ")
         print()
         if select_action == "0":
-            # 0 : Exit
+            # 0 : Back
             running = False
         elif select_action == "1":
-            pass
-        elif select_action == "2":
-            pass
-        elif select_action == "3":
-            pass
-        elif select_action == "4":
-            pass
+            # 1 : set standard Topics of school teaching
+            tr.set_standard_tst()
+            print()
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
-
-
-select_th = """1 : set Topics of school teaching
-0 : Exit
-"""
 
 
 def operation_th(tr: training_report):
-    running = True
-    while running:
-        print(select_th)
-        select_action = input("Select action: ")
-        print()
-        if select_action == "0":
-            # 0 : Exit
-            running = False
-        elif select_action == "1":
-            pass
-        elif select_action == "2":
-            pass
-        elif select_action == "3":
-            pass
-        elif select_action == "4":
-            pass
-        else:
-            print(colored("Please Enter a valid action\n", "yellow"))
+    print("cw must be format like jjjj-Www Example: \"2023-W26\"")
+    tr.set_head_table(input("cw: "))
+    print()
 
 
 select_io = """1 : save json
 2 : save document
 3 : load json
 4 : load last training report
-0 : Exit
+0 : Back
 """
 
 
-def operation_io(tr: training_report):
-    running = True
-    while running:
+def operation_io(tr: training_report) -> training_report:
+    while True:
         print(select_io)
         select_action = input("Select action: ")
         print()
         if select_action == "0":
-            # 0 : Exit
-            running = False
+            # 0 : Back
+            return tr
         elif select_action == "1":
             # 1 : save json
             save_tr(tr, input("Filename or Path: "))
+            return tr
         elif select_action == "2":
             # 2 : save document
-            pass
+            tr.save_document_to(input("Filename or Path: "))
+            return tr
         elif select_action == "3":
             # 3 : load json
-            load_tr(input("Filename or Path: "))
+            return load_tr(input("Filename or Path: "))
         elif select_action == "4":
             # 4 : load last training report
-            pass
+            return load_tr()
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
 
-select_print = """0 : Exit
+def operation_print(tr: training_report):
+    tr.print_document()
+
+
+select_auto = """1 : generate one week
+0 : Back
 """
 
 
-def operation_print(tr: training_report):
-    running = True
-    while running:
-        print(select_print)
+def operation_auto(tr: training_report) -> training_report:
+    while True:
+        print(select_auto)
         select_action = input("Select action: ")
         print()
         if select_action == "0":
-            # 0 : Exit
-            running = False
+            # 0 : Back
+            return tr
         elif select_action == "1":
-            pass
-        elif select_action == "2":
-            pass
-        elif select_action == "3":
-            pass
-        elif select_action == "4":
-            pass
+            # 1 : generate this week
+            print("cw must be format like jjjj-Www Example: \"2023-W26\"")
+            cw = input("cw: ")
+            print()
+            return auto_generate(cw)
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
@@ -494,11 +516,9 @@ select_main = """1 : Operational activities
 4 : Table Head
 5 : I/O Operations
 6 : Print Operations
+7 : Automation
 0 : Exit
 """
-
-
-# TODO: add automation with randomizer and filler(Betriebliche Tätigkeiten)
 
 
 def main():
@@ -527,10 +547,13 @@ def main():
             operation_th(tr)
         elif select_action == "5":
             # 5 : I/O Operations
-            operation_io(tr)
+            tr = operation_io(tr)
         elif select_action == "6":
             # 6 : Print Operations
             operation_print(tr)
+        elif select_action == "7":
+            # 7 : Automation
+            tr = operation_auto(tr)
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
