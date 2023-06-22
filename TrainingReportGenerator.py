@@ -4,6 +4,8 @@ import random
 import subprocess
 import os
 
+# check ok 22.06.2023 22:27
+
 try:
     from docx import Document
 except ModuleNotFoundError:
