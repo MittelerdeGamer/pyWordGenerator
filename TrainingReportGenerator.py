@@ -4,7 +4,7 @@ import random
 import subprocess
 import os
 
-# check ok 22.06.2023 22:27
+# last tr kw10
 
 try:
     from docx import Document
@@ -228,9 +228,14 @@ class training_report:
         self.add_oa("Softwareentwicklung", int(input("Time for Softwareentwicklung: ")))
 
     def set_standard_tst(self):
-        self.add_tst("RMM", int(input("Time for RMM: ")))
-        self.add_tst("Helpdesk", int(input("Time for Helpdesk: ")))
-        self.add_tst("Außendienst", int(input("Time for Außendienst: ")))
+        self.add_tst("LF05: " + input("LF05: "), 4)
+        self.add_tst("LF04: " + input("LF04: "), 6)
+        self.add_tst("LF02: " + input("LF02: "), 2)
+        self.add_tst("LF01: " + input("LF01: "), 2)
+        self.add_tst("Englisch: " + input("Englisch: "), 2)
+        self.add_tst("Politikwissen: " + input("Politikwissen: "), 2)
+        self.add_tst("Religion: " + input("Religion: "), 2)
+        self.add_tst("Sport: " + input("Sport: "), 4)
 
     def check_work_hours(self) -> (bool, int):
         work_hours = 0
