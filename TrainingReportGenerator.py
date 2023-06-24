@@ -4,7 +4,13 @@ import random
 import subprocess
 import os
 
-# last tr kw10
+#
+# last tr kw25
+#
+# missing kw14
+# missing kw15
+# missing kw16
+#
 
 try:
     from docx import Document
@@ -228,14 +234,14 @@ class training_report:
         self.add_oa("Softwareentwicklung", int(input("Time for Softwareentwicklung: ")))
 
     def set_standard_tst(self):
-        self.add_tst("LF05: " + input("LF05: "), 4)
-        self.add_tst("LF04: " + input("LF04: "), 6)
-        self.add_tst("LF02: " + input("LF02: "), 2)
-        self.add_tst("LF01: " + input("LF01: "), 2)
-        self.add_tst("Englisch: " + input("Englisch: "), 2)
-        self.add_tst("Politikwissen: " + input("Politikwissen: "), 2)
-        self.add_tst("Religion: " + input("Religion: "), 2)
-        self.add_tst("Sport: " + input("Sport: "), 4)
+        self.add_tst("LF05: Programmieren", 4)
+        self.add_tst("LF04: IT-Security", 6)
+        self.add_tst("LF02: Arbeitsplätze ausstatten", 2)
+        self.add_tst("LF01: Unternehmen und eigene Rolle", 2)
+        self.add_tst("Englisch: Letter of complaint", 2)
+        self.add_tst("Politikwissenschaft: Gesetze im Betrieblichen-Umfeld", 2)
+        self.add_tst("Religion: Ethnische Diskussionen", 2)
+        self.add_tst("Sport: Fallen gelernt", 4)
 
     def check_work_hours(self) -> (bool, int):
         work_hours = 0
@@ -331,10 +337,10 @@ class training_report:
 def increment_cw(cw: str) -> str:
     split = cw.split("-W")
     split[1] = str(int(split[1]) + 1)
-    return split[0]+"-W"+split[1]
+    return split[0] + "-W" + split[1]
 
 
-def auto_generate(cw: str) -> training_report:
+def auto_generate_operational_week(cw: str) -> training_report:
     tr = training_report()
     tr.set_head_table(cw)
     tr.add_oa("RMM", random.randint(4, 12))
@@ -343,6 +349,20 @@ def auto_generate(cw: str) -> training_report:
     tr.add_oa("Softwareentwicklung", random.randint(8, 24))
     if tr.check_work_hours()[1] < 40:
         tr.add_oa("Betriebliche Tätigkeiten", random.randint(1, 5))
+    return tr
+
+
+def auto_generate_school_week(cw: str) -> training_report:
+    tr = training_report()
+    tr.set_head_table(cw)
+    tr.add_oa("RMM", random.randint(2, 6))
+    tr.add_oa("Helpdesk", random.randint(1, 3))
+    tr.add_oa("Softwareentwicklung", random.randint(4, 10))
+    if tr.check_work_hours()[1] < 16:
+        tr.add_oa("Außendienst", random.randint(2, 5))
+    if tr.check_work_hours()[1] < 16:
+        tr.add_oa("Betriebliche Tätigkeiten", random.randint(1, 2))
+    tr.set_standard_tst()
     return tr
 
 
@@ -429,6 +449,9 @@ def operation_i(tr: training_report):
 
 
 select_tst = """1 : set standard Topics of school teaching
+2 : add entry to Topics of school teaching
+3 : edit entry from Topics of school teaching
+4 : remove entry from Topics of school teaching
 0 : Back
 """
 
@@ -445,6 +468,18 @@ def operation_tst(tr: training_report):
         elif select_action == "1":
             # 1 : set standard Topics of school teaching
             tr.set_standard_tst()
+            print()
+        elif select_action == "2":
+            # 2 : add entry to Topics of school teaching
+            tr.add_tst(input("Text: "), int(input("Hours: ")))
+            print()
+        elif select_action == "3":
+            # 3 : edit entry from Topics of school teaching
+            tr.edit_tst(int(input("Line: ")) - 1, int(input("Hours: ")))
+            print()
+        elif select_action == "4":
+            # 4 : remove entry from Topics of school teaching
+            tr.remove_tst(int(input("Line: ")) - 1)
             print()
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
@@ -494,7 +529,8 @@ def operation_print(tr: training_report):
     tr.print_document()
 
 
-select_auto = """1 : generate one week
+select_auto = """1 : generate operational week
+2 : generate school week
 0 : Back
 """
 
@@ -512,7 +548,12 @@ def operation_auto(tr: training_report) -> training_report:
             print("cw must be format like jjjj-Www Example: \"2023-W26\"")
             cw = input("cw: ")
             print()
-            return auto_generate(cw)
+            return auto_generate_operational_week(cw)
+        elif select_action == "2":
+            print("cw must be format like jjjj-Www Example: \"2023-W26\"")
+            cw = input("cw: ")
+            print()
+            return auto_generate_school_week(cw)
         else:
             print(colored("Please Enter a valid action\n", "yellow"))
 
