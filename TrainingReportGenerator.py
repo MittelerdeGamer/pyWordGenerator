@@ -5,11 +5,8 @@ import subprocess
 import os
 
 #
-# last tr kw25
+# last tr kw26
 #
-# missing kw14
-# missing kw15
-# missing kw16
 #
 
 try:
